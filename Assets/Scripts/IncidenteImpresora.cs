@@ -34,6 +34,7 @@ public class IncidenteImpresora : MonoBehaviour
 
     private string textoOriginalTrabajador = "Caja";
     private bool textoGuardado = false;
+    private bool haSidoResueltaAlMenosUnaVez = false;
 
     private void Awake()
     {
@@ -111,6 +112,7 @@ public class IncidenteImpresora : MonoBehaviour
     {
         if (inc == this.incidente)
         {
+            haSidoResueltaAlMenosUnaVez = true;
             RestaurarVisuales();
             Debug.Log("<color=green>[Impresora]</color> Impresora restaurada a estado operativo.");
         }
@@ -122,7 +124,10 @@ public class IncidenteImpresora : MonoBehaviour
         if (inc == this.incidente)
         {
             ActivarSintoma();
-            Debug.LogWarning("<color=yellow>[Impresora]</color> ¡El fallo de la impresora reapareció tras 60 segundos por IP dinámica!");
+            if (haSidoResueltaAlMenosUnaVez)
+            {
+                Debug.LogWarning("<color=yellow>[Impresora]</color> ¡El fallo de la impresora reapareció tras 60 segundos por IP dinámica!");
+            }
         }
     }
 

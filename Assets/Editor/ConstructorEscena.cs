@@ -114,6 +114,7 @@ public static class ConstructorEscena
 
         // 12. Guardar la escena y actualizar la base de datos de activos
         EditorSceneManager.SaveScene(escena, RUTA_ESCENA);
+        Lightmapping.ClearLightingDataAsset();
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
@@ -134,10 +135,25 @@ public static class ConstructorEscena
         }
     }
 
+    [MenuItem("TI en Crisis/Limpiar datos de iluminacion", false, 10)]
+    public static void LimpiarIluminacion()
+    {
+        Lightmapping.ClearLightingDataAsset();
+        Lightmapping.Clear();
+        Lightmapping.bakedGI = false;
+        Lightmapping.realtimeGI = false;
+        Debug.Log("<color=green>[TI en Crisis]</color> Datos de iluminación obsoletos limpiados exitosamente.");
+    }
+
     #region Configuración de Entorno y Arquitectura
 
     private static void ConfigurarIluminacion()
     {
+        // Limpiar cualquier dato de iluminación horneada obsoleto o incompatible de sesiones anteriores
+        Lightmapping.ClearLightingDataAsset();
+        Lightmapping.bakedGI = false;
+        Lightmapping.realtimeGI = false;
+
         Transform rootLuz = new GameObject("=== ILUMINACION ===").transform;
 
         // Configuración de luz ambiental suave
@@ -374,14 +390,14 @@ public static class ConstructorEscena
         quadPantalla.name = "Pantalla_Quad";
         quadPantalla.transform.SetParent(monitorRoot, false);
         quadPantalla.transform.localPosition = new Vector3(0f, 0.28f, -0.016f);
-        quadPantalla.transform.localRotation = Quaternion.Euler(0, 180, 0);
+        quadPantalla.transform.localRotation = Quaternion.identity;
         quadPantalla.transform.localScale = new Vector3(0.56f, 0.34f, 1f);
         quadPantalla.GetComponent<MeshRenderer>().sharedMaterial = matPantalla;
 
         GameObject labelMonitor = new GameObject("Label_Monitor_TMP");
         labelMonitor.transform.SetParent(monitorRoot, false);
         labelMonitor.transform.localPosition = new Vector3(0f, 0.28f, -0.018f);
-        labelMonitor.transform.localRotation = Quaternion.Euler(0, 180, 0);
+        labelMonitor.transform.localRotation = Quaternion.identity;
         TextMeshPro tmpMonitor = labelMonitor.AddComponent<TextMeshPro>();
         tmpMonitor.text = $"<b>{nombre.ToUpper()}</b>\n<size=70%><color=#38BDF8>Terminal Conectada</color></size>";
         tmpMonitor.alignment = TextAlignmentOptions.Center;
@@ -414,7 +430,7 @@ public static class ConstructorEscena
         GameObject etiquetaNombre = new GameObject($"Etiqueta_{nombre}");
         etiquetaNombre.transform.SetParent(puestoRoot.transform, false);
         etiquetaNombre.transform.localPosition = new Vector3(0f, 1.85f, 0.55f);
-        etiquetaNombre.transform.localRotation = Quaternion.Euler(0, 180, 0);
+        etiquetaNombre.transform.localRotation = Quaternion.identity;
         TextMeshPro tmpNombre = etiquetaNombre.AddComponent<TextMeshPro>();
         tmpNombre.text = nombre;
         tmpNombre.alignment = TextAlignmentOptions.Center;
@@ -1345,6 +1361,11 @@ public static class ConstructorEscena
             rigInstance.transform.SetParent(padre);
             rigInstance.transform.position = new Vector3(0f, 0f, -0.6f);
             rigInstance.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+            XROrigin origin = rigInstance.GetComponent<XROrigin>();
+            if (origin != null)
+            {
+                origin.CameraYOffset = 1.36f;
+            }
             Debug.Log("[TI en Crisis] XR Origin instanciado desde prefab con éxito.");
         }
         else
@@ -1359,6 +1380,7 @@ public static class ConstructorEscena
             GameObject simInstance = (GameObject)PrefabUtility.InstantiatePrefab(simPrefab);
             simInstance.name = "XR Device Simulator";
             simInstance.transform.SetParent(padre);
+            simInstance.AddComponent<AutoElevadorMando>();
             Debug.Log("[TI en Crisis] XR Device Simulator instanciado en la escena con éxito.");
         }
         else
